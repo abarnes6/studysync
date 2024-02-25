@@ -8,6 +8,8 @@ PODS:
   - EXFont (11.10.3):
     - ExpoModulesCore
   - EXJSONUtils (0.12.3)
+  - EXLocation (16.5.3):
+    - ExpoModulesCore
   - EXManifests (0.13.2):
     - ExpoModulesCore
   - EXNotifications (0.27.6):
@@ -983,6 +985,8 @@ PODS:
   - React-Mapbuffer (0.73.4):
     - glog
     - React-debug
+  - react-native-maps (1.10.0):
+    - React-Core
   - react-native-notifications (5.1.0):
     - React-Core
   - React-nativeconfig (0.73.4)
@@ -1165,6 +1169,7 @@ DEPENDENCIES:
   - EXConstants (from `../node_modules/expo-constants/ios`)
   - EXFont (from `../node_modules/expo-font/ios`)
   - EXJSONUtils (from `../node_modules/expo-json-utils/ios`)
+  - EXLocation (from `../node_modules/expo-location/ios`)
   - EXManifests (from `../node_modules/expo-manifests/ios`)
   - EXNotifications (from `../node_modules/expo-notifications/ios`)
   - Expo (from `../node_modules/expo`)
@@ -1206,6 +1211,7 @@ DEPENDENCIES:
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector-modern`)
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
+  - react-native-maps (from `../node_modules/react-native-maps`)
   - react-native-notifications (from `../node_modules/react-native-notifications`)
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
@@ -1249,6 +1255,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-font/ios"
   EXJSONUtils:
     :path: "../node_modules/expo-json-utils/ios"
+  EXLocation:
+    :path: "../node_modules/expo-location/ios"
   EXManifests:
     :path: "../node_modules/expo-manifests/ios"
   EXNotifications:
@@ -1326,6 +1334,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/logger"
   React-Mapbuffer:
     :path: "../node_modules/react-native/ReactCommon"
+  react-native-maps:
+    :path: "../node_modules/react-native-maps"
   react-native-notifications:
     :path: "../node_modules/react-native-notifications"
   React-nativeconfig:
@@ -1378,6 +1388,7 @@ SPEC CHECKSUMS:
   EXConstants: 988aa430ca0f76b43cd46b66e7fae3287f9cc2fc
   EXFont: f20669cb266ef48b004f1eb1f2b20db96cd1df9f
   EXJSONUtils: 5c42959e87be238b045ef37cc5268b16a6c0ad4a
+  EXLocation: c70a4987e703d96b8526541271abb328212ecaa6
   EXManifests: 5e8c29f36c716af768a4ea47ec05e1b89ab93091
   EXNotifications: e11f0e9a5b657c064a481a5d522f3bc5a07bf7cd
   Expo: 1cf3922a9b26262b2556544d4defcecccd37d033
@@ -1418,6 +1429,7 @@ SPEC CHECKSUMS:
   React-jsinspector: 9ac353eccf6ab54d1e0a33862ba91221d1e88460
   React-logger: 0a57b68dd2aec7ff738195f081f0520724b35dab
   React-Mapbuffer: 63913773ed7f96b814a2521e13e6d010282096ad
+  react-native-maps: b4c3b092b1c71240d8d4792bae3738828942f14a
   react-native-notifications: 4601a5a8db4ced6ae7cfc43b44d35fe437ac50c4
   React-nativeconfig: d7af5bae6da70fa15ce44f045621cf99ed24087c
   React-NativeModulesApple: 0123905d5699853ac68519607555a9a4f5c7b3ac

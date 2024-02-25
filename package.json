@@ -20,7 +20,9 @@
     "expo-sqlite": "~13.2.2",
     "expo-dev-client": "~3.3.8",
     "typescript": "^5.3.0",
-    "@types/react": "~18.2.45"
+    "@types/react": "~18.2.45",
+    "expo-location": "~16.5.3",
+    "react-native-maps": "1.10.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

@@ -1,7 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
-import { Text, View, Button, Platform } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { Text, View, Button, Platform, StyleSheet, FlatList, Switch, TextInput, SafeAreaView, ScrollView, } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as SQLite from "expo-sqlite";
+import MapView, { Marker } from 'react-native-maps'; // Add this import
+import * as Location from 'expo-location';
+
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -25,6 +28,11 @@ export default function App() {
   const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
   const responseListener = useRef();
+  const [currentLocation, setCurrentLocation] = useState(null);
+  const [locationAddress, setLocationAddress] = useState(null);
+  const [studyLocations, setStudyLocations] = useState([]);
+  const [status, setStatus] = useState(false); // false for "locked in", true for "acting silly"
+  const [customName, setCustomName] = useState('');
 
   useEffect(() => {
     db.transaction((tx) => {
@@ -74,40 +82,129 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
 
+    const startLocationUpdates = async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.error('Permission to access location was denied');
+        return;
+      }
+
+      const locationSubscription = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.BestForNavigation,
+          timeInterval: 5000, // Update every 5 seconds
+          distanceInterval: 10, // Update when the user has moved at least 10 meters
+        },
+        async (location) => {
+          if (isMounted) {
+            console.log('Received location:', location);
+            setCurrentLocation(location);
+
+            try {
+              const address = await Location.reverseGeocodeAsync({
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+              });
+
+              if (address && address.length > 0) {
+                setLocationAddress(address[0]);
+              }
+            } catch (error) {
+              console.error('Error fetching address:', error);
+            }
+          }
+        }
+      );
+
+      return () => {
+        isMounted = false;
+        locationSubscription.remove();
+      };
+    };
+
+    startLocationUpdates();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleAddLocation = () => {
+    if (locationAddress && customName !== '') {
+      setStudyLocations([...studyLocations, { name: customName, address: locationAddress }]);
+      setCustomName(''); // Clear the customName input field after adding the location
+    }
+  };
+
+  const handleDeleteLocation = (index) => {
+    const updatedLocations = [...studyLocations];
+    updatedLocations.splice(index, 1);
+    setStudyLocations(updatedLocations);
+  };
+
+  const handleStatusToggle = () => {
+    if (status)
+      schedulePushNotification("Friend in need", "Nadia is studying at Seibel");
+    setStatus((prevStatus) => !prevStatus);
+  };
 
   return (
+    <SafeAreaView style={styles.container}>
+    <ScrollView style={styles.scrollView}>
     <View
-      style={{
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'space-around',
-      }}>
-      <Text>Your expo push token: {expoPushToken}</Text>
-      <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-        <Text>Title: {notification && notification.request.content.title} </Text>
-        <Text>Body: {notification && notification.request.content.body}</Text>
-        <Text>Data: {notification && JSON.stringify(notification.request.content.data)}</Text>
+      style={styles.container}>
+      <View style={[styles.statusContainer, { backgroundColor: status ? '#ed4239' : '#82f562' }]}>
+        <Text style={styles.statusText}>{status ? 'Dilly Dallying' : 'Locked In'}</Text>
+        <Button title={status ? '👎' : '👍'} onPress={handleStatusToggle} />
       </View>
-      <Button
-        title="Press to schedule a notification"
-        onPress={async () => {
-          await schedulePushNotification();
-        }}
+      <Text style={styles.heading}>Current Location:</Text>
+      {locationAddress && (
+        <Text style={styles.text}>
+          Address: {locationAddress.name}, {locationAddress.street}, {locationAddress.city}, {locationAddress.region}
+        </Text>
+      )}
+      {currentLocation && (
+        <MapView
+          style={styles.map}
+          initialRegion={{
+            latitude: currentLocation.coords.latitude,
+            longitude: currentLocation.coords.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+        >
+          <Marker
+            coordinate={{
+              latitude: currentLocation.coords.latitude,
+              longitude: currentLocation.coords.longitude,
+            }}
+            title="Current Location"
+          />
+        </MapView>
+      )}
+      <TextInput
+        style={styles.input}
+        value={customName}
+        onChangeText={setCustomName}
+        placeholder="Enter custom name for location"
       />
-      <Button
-        title="Press to view the database"
-        onPress={async () => {
-          db.transaction((tx) => {
-            tx.executeSql("select * from users", [], (_, { rows }) =>
-              schedulePushNotification("users", JSON.stringify(rows['_array']))
-            );
-          });
-        }}
-        
+      <Button title="Add Location" onPress={handleAddLocation} />
+      <FlatList
+        data={studyLocations}
+        renderItem={({ item, index }) => (
+          <View style={styles.studyLocation}>
+            <Text>{item.name}</Text>
+            <Button title="Delete" onPress={() => handleDeleteLocation(index)} />
+          </View>
+        )}
+        keyExtractor={(item, index) => index.toString()}
       />
-    
     </View>
+    </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -150,3 +247,59 @@ async function registerForPushNotificationsAsync() {
 
   return token;
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    borderRadius: 20,
+    backgroundColor: 'white',
+    paddingTop: 40,
+    margin: 20,
+  },
+  statusContainer: {
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 10,
+    borderRadius: 20,
+    padding: 10,
+    paddingTop: 50,
+    paddingBottom: 60,
+    fontSize: 40,
+    color: 'white', // Text color
+  },
+  heading: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    alignItems: 'center',
+    marginBottom: 10,
+    marginTop: 10,
+    margin: 0,
+  },
+  text: {
+    fontSize: 16,
+    marginBottom: 10,
+    borderRadius: 20,
+  },
+  studyLocation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 20,
+    paddingVertical: 5,
+  },
+  map: {
+    height: 200,
+    borderRadius: 20,
+    marginBottom: 20,
+  },
+  scrollView: {
+    backgroundColor: 'white',
+    marginHorizontal: -5,
+  },
+
+});
